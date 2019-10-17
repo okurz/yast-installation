@@ -28,6 +28,7 @@
 require "yast"
 require "y2storage"
 require "y2storage/inhibitors"
+require "y2packager/medium_type"
 
 module Yast
   class InstSystemAnalysisClient < Client
@@ -108,9 +109,13 @@ module Yast
       actions_doing     << _("Searching for system files...")
       actions_functions << fun_ref(method(:FilesFromOlderSystems), "boolean ()")
 
-      actions_todo      << _("Initialize software manager")
-      actions_doing     << _("Initializing software manager...")
-      actions_functions << fun_ref(method(:InitInstallationRepositories), "boolean ()")
+      if Mode.auto && Y2Packager::MediumType.online?
+        @packager_initialized = true
+      else
+        actions_todo      << _("Initialize software manager")
+        actions_doing     << _("Initializing software manager...")
+        actions_functions << fun_ref(method(:InitInstallationRepositories), "boolean ()")
+      end
 
       Progress.New(
         # TRANSLATORS: dialog caption
